@@ -1,0 +1,140 @@
+-- Pour connaître la structure d'une table :
+
+DESCRIBE <nom de la table>
+
+-- Format largeur d'une colonne XXXX à 30 caractères
+
+COL XXXX FORMAT A30;
+
+-- Pour connaître la liste des tables que vous avez déjà créées :
+
+SELECT table_name FROM tabs ;
+SELECT table_name FROM user_tables ;
+SELECT table_name FROM all_tables WHERE OWNER='I3710xxx' ;
+
+
+-- Suppression des tables (si existantes)
+
+DROP TABLE Article;
+DROP TABLE Chercheur;
+DROP TABLE Equipe;
+DROP TABLE COMPAGNIE;
+
+-- Suppression d'une table : exemples
+
+DROP TABLE AFFRETEMENT ;
+DROP TABLE AVION CASCADE CONSTRAINTS ;
+
+
+
+-- Création des tables
+
+-- Table numéro 1 : Compagnie
+
+CREATE TABLE COMPAGNIE (
+nom VARCHAR(20) CONSTRAINT COMP_PK PRIMARY KEY,
+ville VARCHAR(30) CONSTRAINT COMP_VILLE_UQ UNIQUE,
+province VARCHAR (30),
+pays VARCHAR(30)
+);
+
+-- Table numéro 2 : Pilote 
+
+CREATE TABLE PILOTE (
+brevet CHAR(8) CONSTRAINT PILOTE_PK PRIMARY KEY,
+nom CHAR(30) CONSTRAINT PILOTE_NOM_NN NOT NULL,
+nbrHVol Integer CONSTRAINT PILOTE_NBRHVOL_NN NOT NULL,
+compa VARCHAR(20) CONSTRAINT PILOTE_COMP_FK REFERENCES COMPAGNIE(nom) ON DELETE SET NULL,
+CONSTRAINT PILOTE_UQ UNIQUE(nom,compa)
+);
+
+-- Table numéro 3 : Avion
+
+CREATE TABLE AVION (
+matricule CHAR(6) CONSTRAINT AVION_PK PRIMARY KEY,
+typeAvion VARCHAR(20),
+nbrHVol INTEGER CONSTRAINT AVION_NBRHVOL_NN NOT NULL,
+proprio VARCHAR(20) CONSTRAINT AVION_PROP_FK REFERENCES COMPAGNIE(nom) ON DELETE SET NULL
+);
+
+-- Table numéro 4 : Affretement
+
+CREATE TABLE AFFRETEMENT (
+compaAff VARCHAR(20) CONSTRAINT AFF_COMP_FK REFERENCES COMPAGNIE(nom),
+avion CHAR(6) CONSTRAINT AFF_AVION_FK REFERENCES AVION(matricule),
+dateAff DATE,
+prix DECIMAL(9,2) CONSTRAINT AFF_PRIX_NN NOT NULL,
+CONSTRAINT AFF_PK PRIMARY KEY (compaAff, avion, dateAff)
+);
+
+
+-- Insertion de rangées : exemples
+
+INSERT INTO COMPAGNIE VALUES ('Air Canada', 'Montreal', 'Quebec', 'Canada');
+INSERT INTO COMPAGNIE VALUES ('West Jet', 'Toronto', 'Ontario', 'Canada');
+INSERT INTO COMPAGNIE VALUES ('Air France', 'Paris', 'Ile de France', 'France');
+INSERT INTO COMPAGNIE VALUES ('American Airlines', 'Albany', 'New York', 'USA');
+INSERT INTO COMPAGNIE VALUES ('Alitalia', 'Rome', 'Rome', 'Italie');
+
+INSERT INTO PILOTE VALUES ('BR21675', 'Jean Lemieux', 965, 'Air Canada');
+INSERT INTO PILOTE VALUES ('BR21431', 'Pierre Lheureux', 543, 'Air Canada');
+INSERT INTO PILOTE VALUES ('BR45665', 'Serge Paris', 705, 'Air France');
+INSERT INTO PILOTE VALUES ('BR35332', 'Marco Rossi', 801, 'Alitalia');
+INSERT INTO PILOTE VALUES ('BR22445', 'John Steinpack', 433, 'West Jet');
+INSERT INTO PILOTE VALUES ('BR26587', 'George McDonald',559, 'West Jet');
+INSERT INTO PILOTE VALUES ('BR28811', 'Sam Withney', 606, 'Air Canada');
+INSERT INTO PILOTE VALUES ('BR45321', 'Sami Zidane', 542, 'Air France');
+
+INSERT INTO AVION VALUES ('A4327V', 'Boeing 717',  245, 'Air Canada');
+INSERT INTO Avion VALUES ('A7602S', 'Boeing 737',  312, 'West Jet');
+INSERT INTO Avion VALUES ('A1329K', 'Airbus A320', 409, 'Air France');
+
+INSERT INTO AFFRETEMENT (compaAff, avion, prix,dateAff) VALUES ('Air Canada', 'A4327V', 15750.00, to_date('03/05/2008','DD/MM/YYYY'));
+INSERT INTO AFFRETEMENT (compaAff, avion, prix,  dateAff) VALUES ('Air Canada', 'A4327V', 12050.00, to_date('04/05/2008','DD/MM/YYYY'));
+
+INSERT INTO AFFRETEMENT VALUES ('West Jet', 'A7602S', to_date('03/05/2008','DD/MM/YYYY'), 10500.00);
+
+-- Modification de rangées : exemple
+
+UPDATE AVION
+  SET nbrHVol= 260
+WHERE matricule = 'A4327V';
+
+-- Suppression de rangées : exemple
+
+DELETE FROM PILOTE 
+WHERE brevet = 'BR22445';
+
+-- Requêtes
+
+-- Requête 1
+SELECT * 
+FROM COMPAGNIE C, PILOTE P
+WHERE C.nom=P.compa ;
+
+-- Requête 2
+SELECT * 
+FROM COMPAGNIE C, PILOTE P ;
+
+-- Requête 3
+SELECT * 
+FROM COMPAGNIE C, PILOTE P
+WHERE C.nom=P.compa 
+AND C.nom='Air Canada';
+
+-- Requête 4
+-- Afficher le matricule, la compagnie ayant affreté et le prix d'affretement des avions 
+-- dont le propriétaire est 'West Jet'.
+
+
+-- Documentation d'une table ou colonne
+
+COMMENT ON TABLE Catalogue IS 'Une ligne de cette table represente ...';
+COMMENT ON COLUMN Catalogue.prix IS 'Le prix unitaire de l''article chez le fournisseur.';
+
+DESCRIBE user_tab_comments
+COLUMN comments FORMAT A30 WORD_WRAPPED
+SELECT comments FROM user_tab_comments WHERE table_name='AFFRETEMENT';
+DESCRIBE user_col_comments
+SELECT comments FROM user_col_comments WHERE table_name='AFFRETEMENT' AND column_name='PRIX';
+

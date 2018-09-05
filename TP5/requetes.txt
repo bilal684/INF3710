@@ -1,0 +1,33 @@
+a)
+
+db.dblpcollection.find({type:"Book", year:{$gte:2000}})
+
+b)
+
+db.dblpcollection.aggregate([{$match:{year:{$gte:2013}}}, {$project:{_id:0, title:1, nbPages:{$subtract:["$pages.end", "$pages.start"]}}}])
+
+c)
+
+db.dblpcollection.distinct('publisher')
+
+d)
+
+db.dblpcollection.find({authors : 'Ingrid Zukerman' }).sort({ year: -1})
+
+e)
+
+db.dblpcollection.find({authors : 'Ingrid Zukerman' }).count()
+
+f)
+
+db.dblpcollection.find({$or : [{authors : ["Fabian Bohnert", "Ingrid Zukerman"]} , {authors : ["Ingrid Zukerman", "Fabian Bohnert"]}]})
+
+g)
+
+db.dblpcollection.insert({"type":"Book", "title":"L'art de fumer la shisha", "year":1995, "pages":{"start" : 1, "end" : 298}, "publisher":"MehdiInc", "authors":["Bilal Itani"]})
+
+h)
+
+db.dblpcollection.update({title:"L'art de fumer la shisha"},{$addToSet:{"authors" :"Mehdi Kadi"}})
+
+db.product.insert({"label":"allo", "description":"L'art de fumer la shisha", "Price":"1995"})
